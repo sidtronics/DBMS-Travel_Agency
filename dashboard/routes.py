@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models.trip_model import search_trips
+from models.review_model import upsert_review
 from models.booking_model import (
     get_customer_bookings,
     get_available_seats,
     create_booking_and_payment,
     get_booking_with_seats_and_review,
-    upsert_review,
 )
 
 
