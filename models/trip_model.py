@@ -31,3 +31,25 @@ def create_trip_and_seats(
     cursor.close()
     conn.close()
     return trip_id
+
+
+def search_trips(source, destination, date):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT t.TripID, t.DepartureTime, t.ArrivalTime, t.AvailableSeats,
+               b.BusNumber, b.BusType, r.Distance
+        FROM Trip t
+        JOIN Route r ON t.RouteID = r.RouteID
+        JOIN Location l1 ON r.SourceID = l1.LocationID
+        JOIN Location l2 ON r.DestinationID = l2.LocationID
+        JOIN Bus b ON t.BusID = b.BusID
+        WHERE l1.City = %s AND l2.City = %s AND t.TripDate = %s
+    """
+    cursor.execute(query, (source, destination, date))
+    trips = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return trips
