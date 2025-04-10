@@ -84,16 +84,15 @@ def seat_selection(trip_id):
 def payment(trip_id):
     if request.method == "POST":
         customer_id = session.get("user_id")
-        amount = request.form.get("amount")
         payment_method = request.form.get("payment_method")  # UPI, Card, etc.
         seat_numbers = request.form.getlist("seats")  # Passed from hidden inputs
 
-        if not all([customer_id, amount, payment_method, seat_numbers]):
+        if not all([customer_id, payment_method, seat_numbers]):
             flash("Missing payment or seat data.", "danger")
             return redirect(url_for("dashboard.seat_selection", trip_id=trip_id))
 
         success = create_booking_and_payment(
-            customer_id, trip_id, seat_numbers, amount, payment_method
+            customer_id, trip_id, seat_numbers, payment_method
         )
         if not success:
             flash("Payment failed or seat conflict. Please try again.", "danger")

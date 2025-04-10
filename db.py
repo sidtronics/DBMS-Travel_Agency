@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS Trip (
     ArrivalTime DATETIME,
     TripDate DATE NOT NULL,
     AvailableSeats INT,
+    PricePerSeat DECIMAL(8,2) NOT NULL,
     FOREIGN KEY (RouteID) REFERENCES Route(RouteID),
     FOREIGN KEY (BusID) REFERENCES Bus(BusID)
 );

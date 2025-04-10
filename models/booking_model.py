@@ -55,45 +55,56 @@ def get_available_seats(trip_id):
     return seats
 
 
-def create_booking_and_payment(
-    customer_id, trip_id, seat_numbers, amount, payment_method
-):
+def create_booking_and_payment(customer_id, trip_id, seat_numbers, payment_method):
     conn = get_connection()
     cursor = conn.cursor()
 
     try:
+        # Fetch PricePerSeat from Trip
+        cursor.execute("SELECT PricePerSeat FROM Trip WHERE TripID = %s", (trip_id,))
+        result = cursor.fetchone()
+        if not result:
+            raise Exception("Trip not found.")
+        price_per_seat = result[0]
+
+        total_seats = len(seat_numbers)
+        total_amount = total_seats * price_per_seat
+
         # Insert into Booking table
         cursor.execute(
             """
             INSERT INTO Booking (CustomerID, TripID, BookingDate, TotalSeats, TotalAmount)
             VALUES (%s, %s, %s, %s, %s)
-        """,
-            (customer_id, trip_id, datetime.now(), len(seat_numbers), amount),
+            """,
+            (customer_id, trip_id, datetime.now(), total_seats, total_amount),
         )
         booking_id = cursor.lastrowid
 
-        # Mark the seats with BookingID and Status = 'Booked'
-        format_strings = ",".join(["%s"] * len(seat_numbers))
+        # Mark the seats as Booked
+        format_strings = ",".join(["%s"] * total_seats)
         cursor.execute(
             f"""
             UPDATE Seat
-            SET Status = 'Booked'
+            SET Status = 'Booked', BookingID = %s
             WHERE TripID = %s AND SeatNumber IN ({format_strings}) AND Status = 'Available'
-        """,
-            [trip_id] + seat_numbers,
+            """,
+            [booking_id, trip_id] + seat_numbers,
         )
+        if cursor.rowcount != total_seats:
+            raise Exception("Some seats are already booked.")
 
         # Insert into Payment table
         cursor.execute(
             """
             INSERT INTO Payment (BookingID, Amount, PaymentMethod, PaymentDate)
             VALUES (%s, %s, %s, %s)
-        """,
-            (booking_id, amount, payment_method, datetime.now()),
+            """,
+            (booking_id, total_amount, payment_method, datetime.now()),
         )
 
         conn.commit()
         return True
+
     except Exception as e:
         print("Error in payment transaction:", e)
         conn.rollback()
