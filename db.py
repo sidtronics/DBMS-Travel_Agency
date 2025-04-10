@@ -89,10 +89,13 @@ CREATE TABLE IF NOT EXISTS Booking (
     FOREIGN KEY (TripID) REFERENCES Trip(TripID)
 );
 
-CREATE TABLE IF NOT EXISTS BookingSeat (
-    BookingSeatID INT PRIMARY KEY AUTO_INCREMENT,
-    BookingID INT NOT NULL,
+CREATE TABLE IF NOT EXISTS Seat (
+    SeatID INT PRIMARY KEY AUTO_INCREMENT,
+    TripID INT NOT NULL,
     SeatNumber VARCHAR(10) NOT NULL,
+    Status ENUM('Available', 'Booked') DEFAULT 'Available',
+    BookingID INT DEFAULT NULL,
+    FOREIGN KEY (TripID) REFERENCES Trip(TripID),
     FOREIGN KEY (BookingID) REFERENCES Booking(BookingID)
 );
 
