@@ -1,4 +1,4 @@
-from database import get_connection
+from db import get_connection
 
 
 def create_trip_and_seats(
