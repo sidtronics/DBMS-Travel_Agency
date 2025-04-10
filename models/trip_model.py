@@ -2,18 +2,32 @@ from db import get_connection
 
 
 def create_trip_and_seats(
-    route_id, bus_id, departure_time, arrival_time, trip_date, available_seats=39
+    route_id,
+    bus_id,
+    departure_time,
+    arrival_time,
+    trip_date,
+    price_per_seat,
+    available_seats=39,
 ):
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Insert into Trip table
+    # Insert into Trip table with PricePerSeat
     cursor.execute(
         """
-        INSERT INTO Trip (RouteID, BusID, DepartureTime, ArrivalTime, TripDate, AvailableSeats)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """,
-        (route_id, bus_id, departure_time, arrival_time, trip_date, available_seats),
+        INSERT INTO Trip (RouteID, BusID, DepartureTime, ArrivalTime, TripDate, AvailableSeats, PricePerSeat)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """,
+        (
+            route_id,
+            bus_id,
+            departure_time,
+            arrival_time,
+            trip_date,
+            available_seats,
+            price_per_seat,
+        ),
     )
     trip_id = cursor.lastrowid
 
@@ -23,7 +37,7 @@ def create_trip_and_seats(
         """
         INSERT INTO Seat (TripID, SeatNumber, Status)
         VALUES (%s, %s, %s)
-    """,
+        """,
         seat_data,
     )
 
@@ -38,7 +52,7 @@ def search_trips(source, destination, date):
     cursor = conn.cursor(dictionary=True)
 
     query = """
-        SELECT t.TripID, t.DepartureTime, t.ArrivalTime, t.AvailableSeats,
+        SELECT t.TripID, t.DepartureTime, t.ArrivalTime, t.AvailableSeats, t.PricePerSeat,
                b.BusNumber, b.BusType, r.Distance
         FROM Trip t
         JOIN Route r ON t.RouteID = r.RouteID
