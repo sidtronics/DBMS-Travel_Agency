@@ -4,6 +4,8 @@ from models.booking_model import (
     get_customer_bookings,
     get_available_seats,
     create_booking_and_payment,
+    get_booking_with_seats_and_review,
+    upsert_review,
 )
 
 
@@ -27,6 +29,31 @@ def my_bookings():
 
     bookings = get_customer_bookings(customer_id)
     return render_template("my_bookings.html", bookings=bookings)
+
+
+@dashboard_bp.route("/mybookings/<int:booking_id>", methods=["GET", "POST"])
+def booking_details(booking_id):
+    customer_id = session.get("user_id")
+
+    if request.method == "POST":
+        rating = request.form["rating"]
+        comment = request.form["comment"]
+        if not rating:
+            flash("Rating is required.", "warning")
+        else:
+            upsert_review(customer_id, booking_id, rating, comment)
+            flash("Review submitted successfully.", "success")
+        return redirect(url_for("dashboard.my_bookings"))
+
+    # For GET request
+    booking, seats, review = get_booking_with_seats_and_review(customer_id, booking_id)
+    if not booking:
+        flash("Booking not found or access denied.", "danger")
+        return redirect(url_for("dashboard.my_bookings"))
+
+    return render_template(
+        "booking_details.html", booking=booking, seats=seats, review=review
+    )
 
 
 @dashboard_bp.route("/book", methods=["GET", "POST"])

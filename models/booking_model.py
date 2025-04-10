@@ -101,3 +101,52 @@ def create_booking_and_payment(
     finally:
         cursor.close()
         conn.close()
+
+
+def get_booking_with_seats_and_review(customer_id, booking_id):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Booking details
+        cursor.execute(
+            """
+            SELECT b.BookingID, b.BookingDate, b.TotalSeats, b.TotalAmount,
+                   t.TripDate, t.DepartureTime, t.ArrivalTime,
+                   r.RouteID, r.SourceID, r.DestinationID
+            FROM Booking b
+            JOIN Trip t ON b.TripID = t.TripID
+            JOIN Route r ON t.RouteID = r.RouteID
+            WHERE b.BookingID = %s AND b.CustomerID = %s
+        """,
+            (booking_id, customer_id),
+        )
+        booking = cursor.fetchone()
+        if not booking:
+            return None, None, None
+
+        # Seats
+        cursor.execute(
+            """
+            SELECT SeatNumber FROM Seat
+            WHERE BookingID = %s
+        """,
+            (booking_id,),
+        )
+        seats = [row["SeatNumber"] for row in cursor.fetchall()]
+
+        # Review (optional)
+        cursor.execute(
+            """
+            SELECT Rating, Comment, ReviewDate
+            FROM Review
+            WHERE BookingID = %s AND CustomerID = %s
+        """,
+            (booking_id, customer_id),
+        )
+        review = cursor.fetchone()
+
+        return booking, seats, review
+    finally:
+        cursor.close()
+        conn.close()
