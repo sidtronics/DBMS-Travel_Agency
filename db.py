@@ -127,7 +127,12 @@ def get_connection():
 
 def initialize_database():
     try:
-        conn = get_connection()
+        conn = mariadb.connect(
+            host="localhost",
+            user="root",
+            password="root",
+            port=3306,
+        )
         cur = conn.cursor()
         for statement in SQL_INIT_SCRIPT.strip().split(";"):
             if statement.strip():
