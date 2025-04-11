@@ -37,16 +37,24 @@ def seed_data():
             "INSERT INTO Route (SourceID, DestinationID, Distance, EstimatedTime) VALUES (?, ?, ?, ?)", routes
         )
 
+        # Get RouteIDs
+        cur.execute("SELECT SourceID, DestinationID, RouteID FROM Route")
+        route_map = {(src, dest): rid for src, dest, rid in cur.fetchall()}
+
         # 3. Buses
         buses = [
-            ("MH01AB1234", 40, "AC", 1),
-            ("DL05XY6789", 35, "Non-AC", 2),
-            ("UP32JK1122", 45, "AC", 3),
-            ("MH12ZZ5566", 30, "Non-AC", 4),
+            ("MH01AB1234", 40, "AC", route_map[(loc_map["Mumbai"], loc_map["Pune"])]),
+            ("DL05XY6789", 35, "Non-AC", route_map[(loc_map["Delhi"], loc_map["Agra"])]),
+            ("UP32JK1122", 45, "AC", route_map[(loc_map["Mumbai"], loc_map["Agra"])]),
+            ("MH12ZZ5566", 30, "Non-AC", route_map[(loc_map["Delhi"], loc_map["Pune"])]),
         ]
         cur.executemany(
             "INSERT INTO Bus (BusNumber, Capacity, BusType, RouteID) VALUES (?, ?, ?, ?)", buses
         )
+
+        # Get BusIDs
+        cur.execute("SELECT BusNumber, BusID FROM Bus")
+        bus_map = {bus_num: bus_id for bus_num, bus_id in cur.fetchall()}
 
         # 4. Customers
         customers = [
@@ -74,11 +82,10 @@ def seed_data():
 
         # 7. Trips + Seats
         trips = [
-            (1, 1, "2025-04-15 09:00:00", "2025-04-15 12:00:00", "2025-04-15", 450.0),
-            (2, 2, "2025-04-16 08:30:00", "2025-04-16 12:30:00", "2025-04-16", 600.0),
-            (3, 3, "2025-04-17 07:00:00", "2025-04-17 23:00:00", "2025-04-17", 1200.0),
-            (4, 4, "2025-04-18 06:00:00", "2025-04-18 23:30:00", "2025-04-18", 1100.0),
-            (5, 5, "2025-04-15 06:00:00", "2025-04-15 23:30:00", "2025-04-15", 1100.0),
+            (route_map[(loc_map["Mumbai"], loc_map["Pune"])], bus_map["MH01AB1234"], "2025-04-15 09:00:00", "2025-04-15 12:00:00", "2025-04-15", 450.0),
+            (route_map[(loc_map["Delhi"], loc_map["Agra"])], bus_map["DL05XY6789"], "2025-04-16 08:30:00", "2025-04-16 12:30:00", "2025-04-16", 600.0),
+            (route_map[(loc_map["Mumbai"], loc_map["Agra"])], bus_map["UP32JK1122"], "2025-04-17 07:00:00", "2025-04-17 23:00:00", "2025-04-17", 1200.0),
+            (route_map[(loc_map["Delhi"], loc_map["Pune"])], bus_map["MH12ZZ5566"], "2025-04-18 06:00:00", "2025-04-18 23:30:00", "2025-04-18", 1100.0),
         ]
 
         for route_id, bus_id, dep, arr, date, price in trips:
@@ -95,17 +102,22 @@ def seed_data():
             cur.executemany("INSERT INTO Seat (TripID, SeatNumber, Status, BookingID) VALUES (?, ?, ?, ?)", seats)
 
         # 8. Bookings
+        cur.execute("SELECT TripID FROM Trip WHERE BusID=?", (bus_map["UP32JK1122"],))
+        trip3_id = cur.fetchone()[0]
+        cur.execute("SELECT TripID FROM Trip WHERE BusID=?", (bus_map["DL05XY6789"],))
+        trip2_id = cur.fetchone()[0]
+
         cur.execute("INSERT INTO Booking (CustomerID, TripID, BookingDate, TotalSeats, TotalAmount) VALUES (?, ?, ?, ?, ?)",
-                    (1, 3, datetime.now(), 2, 2400.00))
+                    (1, trip3_id, datetime.now(), 2, 2400.00))
         booking1_id = cur.lastrowid
 
         cur.execute("INSERT INTO Booking (CustomerID, TripID, BookingDate, TotalSeats, TotalAmount) VALUES (?, ?, ?, ?, ?)",
-                    (2, 2, datetime.now(), 1, 600.00))
+                    (2, trip2_id, datetime.now(), 1, 600.00))
         booking2_id = cur.lastrowid
 
         # 9. Seat Status Update
-        cur.execute("UPDATE Seat SET Status='Booked', BookingID=? WHERE TripID=3 AND SeatNumber IN ('A1', 'A2')", (booking1_id,))
-        cur.execute("UPDATE Seat SET Status='Booked', BookingID=? WHERE TripID=2 AND SeatNumber='A1'", (booking2_id,))
+        cur.execute("UPDATE Seat SET Status='Booked', BookingID=? WHERE TripID=? AND SeatNumber IN ('A1', 'A2')", (booking1_id, trip3_id))
+        cur.execute("UPDATE Seat SET Status='Booked', BookingID=? WHERE TripID=? AND SeatNumber='A1'", (booking2_id, trip2_id))
 
         # 10. Payments
         cur.executemany(
