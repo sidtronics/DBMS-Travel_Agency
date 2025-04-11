@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Home - TravelEase{% endblock %}
+
+{% block content %}
+<div class="hero d-flex align-items-center justify-content-center text-center text-white" style="height: 90vh; background: url('/static/images/hero.jpg') no-repeat center center/cover;">
+    <div class="bg-dark bg-opacity-50 p-4 rounded">
+        <h1 class="display-3">Explore. Book. Travel.</h1>
+        <p class="lead">Your journey begins with a single click.</p>
+        <a href="{{ url_for('dashboard.book') }}" class="btn btn-lg btn-primary mt-3">Search Trips</a>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row text-center">
+        <div class="col-md-4">
+            <h4>Fast Booking</h4>
+            <p>Book trips in minutes with a simple, easy-to-use interface.</p>
+        </div>
+        <div class="col-md-4">
+            <h4>Budget Friendly</h4>
+            <p>Affordable routes for your favorite destinations.</p>
+        </div>
+        <div class="col-md-4">
+            <h4>24/7 Support</h4>
+            <p>We're here anytime you need us.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

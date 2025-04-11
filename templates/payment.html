@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - TravelEase{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Complete Your Payment</h2>
+
+    <form method="POST">
+        <div class="card shadow-sm p-4">
+            <h5 class="mb-3">Selected Trip ID: {{ trip_id }}</h5>
+
+            <!-- Display selected seats (assuming you passed them via hidden fields or session) -->
+            <div class="mb-3">
+                <label for="seats" class="form-label"><strong>Selected Seats</strong></label>
+                <ul class="list-group mb-2">
+                    {% for seat in request.form.getlist('seats') %}
+                        <li class="list-group-item">{{ seat }}</li>
+                        <input type="hidden" name="seats" value="{{ seat }}">
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="mb-4">
+                <label for="payment_method" class="form-label"><strong>Payment Method</strong></label>
+                <select class="form-select" name="payment_method" id="payment_method" required>
+                    <option value="" disabled selected>Select payment method</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Card">Card</option>
+                    <option value="Netbanking">Netbanking</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Confirm Payment</button>
+        </div>
+    </form>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('dashboard.seat_selection', trip_id=trip_id) }}" class="btn btn-secondary">Back to Seat Selection</a>
+    </div>
+</div>
+{% endblock %}
