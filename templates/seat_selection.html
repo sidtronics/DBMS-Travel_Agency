@@ -6,7 +6,7 @@
 <div class="container mt-5">
     <h2 class="mb-4 text-center">Select Your Seat</h2>
 
-    <form method="POST" action="{{ url_for('dashboard.pay', trip_id=trip_id) }}">
+    <form method="POST" action="{{ url_for('dashboard.payment', trip_id=trip_id) }}">
         <div class="row mb-4">
             <div class="col">
                 <p><strong>Trip ID:</strong> {{ trip_id }}</p>
