@@ -22,10 +22,10 @@ def dashboard():
 
 @dashboard_bp.route("/mybookings")
 def my_bookings():
-    customer_id = session["id"]
+    #customer_id = session["id"]
 
-    if not customer_id:
-        return redirect(url_for("auth.login"))
+    #if not customer_id:
+    #    return redirect(url_for("auth.login"))
 
     bookings = get_customer_bookings(customer_id)
     return render_template("my_bookings.html", bookings=bookings)
@@ -71,21 +71,35 @@ def book():
 
 @dashboard_bp.route("/book/<int:trip_id>/")
 def seat_selection(trip_id):
-    customer_id = session["id"]
+    #customer_id = session["id"]
 
-    if not customer_id:
-        return redirect(url_for("auth.login"))
+    #if not customer_id:
+    #    return redirect(url_for("auth.login"))
 
     seats = get_available_seats(trip_id)
     return render_template("seat_selection.html", trip_id=trip_id, seats=seats)
 
+@dashboard_bp.route("/book/<int:trip_id>/pay/init", methods=["POST"])
+def show_payment_page(trip_id):
+    # Get selected seats from POST
+    seat_numbers = request.form.getlist("seats")
+    
+    if not seat_numbers:
+        flash("Please select at least one seat.", "warning")
+        return redirect(url_for("dashboard.seat_selection", trip_id=trip_id))
+    
+    return render_template("payment.html", trip_id=trip_id, seat_numbers=seat_numbers)
 
 @dashboard_bp.route("/book/<int:trip_id>/pay", methods=["GET", "POST"])
 def payment(trip_id):
     if request.method == "POST":
-        customer_id = session.get("user_id")
+        customer_id = 1
         payment_method = request.form.get("payment_method")  # UPI, Card, etc.
         seat_numbers = request.form.getlist("seats")  # Passed from hidden inputs
+
+        print("Seats received:", seat_numbers)
+        print("Payment method:", payment_method)
+
 
         if not all([customer_id, payment_method, seat_numbers]):
             flash("Missing payment or seat data.", "danger")
