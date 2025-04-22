@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Booking Reports - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Daily Booking Revenue</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Total Revenue (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ report.date }}</td>
+                    <td>₹{{ report.revenue or 0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

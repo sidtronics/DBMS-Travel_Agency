@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, flash, request
+from models.report_model import get_daily_booking_revenue
 from models.bus_model import (
     get_all_buses,
     add_new_bus,
@@ -328,14 +329,8 @@ def delete_location(location_id):
 # -------------------------
 # booking reports
 # -------------------------
-@admin_bp.route("/reports/bookings", methods=["get"], endpoint="booking_reports")
+@admin_bp.route("/reports/bookings", methods=["GET"], endpoint="booking_reports")
 def booking_reports():
-    conn = get_connection()
-    cur = conn.cursor(dictionary=true)
-    # example: fetch total revenue per day
-    cur.execute(
-        "select date(bookingdate) as date, sum(totalamount) as revenue from booking group by date(bookingdate)"
-    )
-    reports = cur.fetchall()
-    conn.close()
+    reports = get_daily_booking_revenue()
     return render_template("admin/booking_reports.html", reports=reports)
+
