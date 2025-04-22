@@ -67,3 +67,48 @@ def search_trips(source, destination, date):
     cursor.close()
     conn.close()
     return trips
+
+
+def fetch_trips():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT Trip.TripID, Route.SourceID, Route.DestinationID, Bus.BusNumber,
+               Trip.DepartureTime, Trip.ArrivalTime, Trip.TripDate,
+               Trip.AvailableSeats, Trip.PricePerSeat
+        FROM Trip
+        JOIN Route ON Trip.RouteID = Route.RouteID
+        JOIN Bus ON Trip.BusID = Bus.BusID
+    """
+    )
+    trips = cur.fetchall()
+    conn.close()
+    return trips
+
+
+def add_new_trip(route_id, bus_id, departure, arrival, date, price):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            INSERT INTO Trip (RouteID, BusID, DepartureTime, ArrivalTime, TripDate, AvailableSeats, PricePerSeat)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (route_id, bus_id, departure, arrival, date, 39, price),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_trip_by_id(trip_id):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM Trip WHERE TripID = ?", (trip_id,))
+        conn.commit()
+    finally:
+        conn.close()
