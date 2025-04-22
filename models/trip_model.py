@@ -112,3 +112,31 @@ def delete_trip_by_id(trip_id):
         conn.commit()
     finally:
         conn.close()
+
+
+def get_trip_by_id(trip_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM Trip WHERE TripID = ?", (trip_id,))
+    trip = cur.fetchone()
+    conn.close()
+    return trip
+
+
+def update_trip(
+    trip_id, route_id, bus_id, departure_time, arrival_time, trip_date, price
+):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE Trip
+            SET RouteID = ?, BusID = ?, DepartureTime = ?, ArrivalTime = ?, TripDate = ?, PricePerSeat = ?
+            WHERE TripID = ?
+        """,
+            (route_id, bus_id, departure_time, arrival_time, trip_date, price, trip_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()

@@ -1,7 +1,13 @@
 from flask import Blueprint, render_template, session, redirect, url_for, flash, request
 from models.bus_model import fetch_buses
-from models.trip_model import fetch_trips, add_new_trip, delete_trip_by_id
-from models.route_model import fetch_routes
+from models.trip_model import (
+    fetch_trips,
+    add_new_trip,
+    delete_trip_by_id,
+    get_trip_by_id,
+    update_trip
+)
+from models.route_model import fetch_routes, get_all_routes
 
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -87,65 +93,51 @@ def delete_trip(trip_id):
 # -------------------------
 # trips - edit (get+post)
 # -------------------------
-@admin_bp.route("/trips/edit/<int:trip_id>", methods=["get", "post"])
+@admin_bp.route("/trips/edit/<int:trip_id>", methods=["GET", "POST"])
 def edit_trip(trip_id):
     try:
-        conn = get_connection()
-        cur = conn.cursor()
-
-        if request.method == "post":
-            # update
+        if request.method == "POST":
             route_id = request.form["route_id"]
             bus_id = request.form["bus_id"]
+            trip_date = request.form["trip_date"]
             departure = request.form["departure"]
             arrival = request.form["arrival"]
-            date = request.form["trip_date"]
             price = request.form["price"]
 
-            cur.execute(
-                """
-                update trip set routeid=?, busid=?, departuretime=?, arrivaltime=?, tripdate=?, priceperseat=?
-                where tripid=?
-            """,
-                (route_id, bus_id, departure, arrival, date, price, trip_id),
+            departure_time = f"{trip_date} {departure}:00"
+            arrival_time = f"{trip_date} {arrival}:00"
+
+            update_trip(
+                trip_id,
+                route_id,
+                bus_id,
+                departure_time,
+                arrival_time,
+                trip_date,
+                price,
             )
-            conn.commit()
-            flash("trip updated successfully.", "success")
+            flash("Trip updated successfully.", "success")
             return redirect(url_for("admin.manage_trips"))
 
-        # get - fetch trip info
-        cur.execute("select * from trip where tripid=?", (trip_id,))
-        trip = cur.fetchone()
-
-        cur.execute(
-            """
-            select routeid, l1.city as source, l2.city as destination
-            from route
-            join location l1 on route.sourceid = l1.locationid
-            join location l2 on route.destinationid = l2.locationid
-        """
-        )
-        routes = cur.fetchall()
-
-        cur.execute("select busid, busnumber from bus")
-        buses = cur.fetchall()
+        # GET method — load data for form
+        trip = get_trip_by_id(trip_id)
+        routes = get_all_routes()
+        buses = fetch_buses()
 
         return render_template(
             "admin/edit_trip.html", trip=trip, routes=routes, buses=buses
         )
 
-    except exception as e:
-        flash(f"error editing trip: {str(e)}", "danger")
+    except Exception as e:
+        flash(f"Error editing trip: {str(e)}", "danger")
         return redirect(url_for("admin.manage_trips"))
-
-    finally:
-        if conn:
-            conn.close()
 
 
 # -------------------------
 # routes management
 # -------------------------
+
+
 @admin_bp.route("/routes", methods=["get"], endpoint="manage_routes")
 def manage_routes():
     conn = get_connection()
