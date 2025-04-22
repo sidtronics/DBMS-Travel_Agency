@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS Route (
     DestinationID INT NOT NULL,
     Distance DECIMAL(6,2),
     EstimatedTime VARCHAR(20),
-    FOREIGN KEY (SourceID) REFERENCES Location(LocationID),
-    FOREIGN KEY (DestinationID) REFERENCES Location(LocationID)
+    FOREIGN KEY (SourceID) REFERENCES Location(LocationID) ON DELETE CASCADE,
+    FOREIGN KEY (DestinationID) REFERENCES Location(LocationID) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Bus (

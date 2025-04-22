@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Edit Location - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Edit Location</h2>
+
+    <div class="card">
+        <div class="card-header">Update Location Details</div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" class="form-control" name="city" value="{{ location[1] }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="state" class="form-label">State</label>
+                        <input type="text" class="form-control" name="state" value="{{ location[2] }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="pincode" class="form-label">Pincode</label>
+                        <input type="text" class="form-control" name="pincode" value="{{ location[3] }}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Update Location</button>
+                <a href="{{ url_for('admin.manage_locations') }}" class="btn btn-secondary mt-3">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

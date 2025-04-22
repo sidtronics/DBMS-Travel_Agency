@@ -5,9 +5,8 @@ from models.bus_model import (
     get_bus_by_id,
     update_bus,
     delete_bus_by_id,
-    fetch_buses
+    fetch_buses,
 )
-from models.location_model import get_all_locations
 from models.route_model import (
     add_new_route,
     get_all_routes,
@@ -15,7 +14,6 @@ from models.route_model import (
     fetch_routes,
     update_route,
     delete_route_by_id,
-    get_all_route_ids
 )
 from models.trip_model import (
     fetch_trips,
@@ -23,6 +21,13 @@ from models.trip_model import (
     delete_trip_by_id,
     get_trip_by_id,
     update_trip,
+)
+from models.location_model import (
+    get_all_locations,
+    add_new_location,
+    get_location_by_id,
+    update_location,
+    delete_location_by_id,
 )
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -270,58 +275,54 @@ def delete_bus(bus_id):
 
 
 # -------------------------
-# user management
+# locations management
 # -------------------------
-@admin_bp.route("/users", methods=["get"], endpoint="manage_users")
-def manage_users():
-    conn = get_connection()
-    cur = conn.cursor(dictionary=true)
-    cur.execute("select customerid, fullname, username, email, phone from customer")
-    users = cur.fetchall()
-    conn.close()
-    return render_template("admin/users.html", users=users)
+@admin_bp.route("/locations", methods=["GET"], endpoint="manage_locations")
+def manage_locations():
+    locations = get_all_locations()
+    return render_template("admin/locations.html", locations=locations)
+
+
+@admin_bp.route("/locations/add", methods=["POST"], endpoint="add_location")
+def add_location():
+    data = request.form
+    try:
+        add_new_location(data["city"], data["state"], data["pincode"])
+        flash("Location added successfully.", "success")
+    except Exception as e:
+        flash(f"Error adding location: {e}", "danger")
+    return redirect(url_for("admin.manage_locations"))
 
 
 @admin_bp.route(
-    "/users/edit/<int:user_id>", methods=["get", "post"], endpoint="edit_user"
+    "/locations/edit/<int:location_id>",
+    methods=["GET", "POST"],
+    endpoint="edit_location",
 )
-def edit_user(user_id):
-    conn = get_connection()
-    cur = conn.cursor(dictionary=true)
-    if request.method == "post":
+def edit_location(location_id):
+    if request.method == "POST":
         data = request.form
         try:
-            cur.execute(
-                "update customer set fullname=?, email=?, phone=? where customerid=?",
-                (data["fullname"], data["email"], data["phone"], user_id),
-            )
-            conn.commit()
-            flash("user updated.", "success")
-            return redirect(url_for("admin.manage_users"))
-        except exception as e:
-            flash(f"error updating user: {e}", "danger")
-    cur.execute(
-        "select customerid, fullname, username, email, phone from customer where customerid=?",
-        (user_id,),
-    )
-    user = cur.fetchone()
-    conn.close()
-    return render_template("admin/edit_user.html", user=user)
+            update_location(location_id, data["city"], data["state"], data["pincode"])
+            flash("Location updated successfully.", "success")
+            return redirect(url_for("admin.manage_locations"))
+        except Exception as e:
+            flash(f"Error updating location: {e}", "danger")
+
+    location = get_location_by_id(location_id)
+    return render_template("admin/edit_location.html", location=location)
 
 
-@admin_bp.route("/users/delete/<int:user_id>", methods=["post"], endpoint="delete_user")
-def delete_user(user_id):
+@admin_bp.route(
+    "/locations/delete/<int:location_id>", methods=["POST"], endpoint="delete_location"
+)
+def delete_location(location_id):
     try:
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute("delete from customer where customerid=?", (user_id,))
-        conn.commit()
-        flash("user deleted.", "success")
-    except exception as e:
-        flash(f"error deleting user: {e}", "danger")
-    finally:
-        conn.close()
-    return redirect(url_for("admin.manage_users"))
+        delete_location_by_id(location_id)
+        flash("Location deleted successfully.", "success")
+    except Exception as e:
+        flash(f"Error deleting location: {e}", "danger")
+    return redirect(url_for("admin.manage_locations"))
 
 
 # -------------------------

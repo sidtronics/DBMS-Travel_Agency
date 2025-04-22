@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Manage Locations - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Manage Locations</h2>
+
+    <!-- Add Location Form -->
+    <div class="card mb-4">
+        <div class="card-header">Add New Location</div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.add_location') }}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" class="form-control" name="city" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="state" class="form-label">State</label>
+                        <input type="text" class="form-control" name="state">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="pincode" class="form-label">Pincode</label>
+                        <input type="text" class="form-control" name="pincode">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Add Location</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Location List Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Pincode</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for location in locations %}
+                <tr>
+                    <td>{{ location[0] }}</td>
+                    <td>{{ location[1] }}</td>
+                    <td>{{ location[2] }}</td>
+                    <td>{{ location[3] }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_location', location_id=location[0]) }}" class="btn btn-sm btn-info">Edit</a>
+                        <form action="{{ url_for('admin.delete_location', location_id=location[0]) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
