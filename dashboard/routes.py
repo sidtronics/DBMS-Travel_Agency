@@ -14,7 +14,7 @@ dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 
 @dashboard_bp.route("/")
 def dashboard():
-    if "id" not in session:
+    if "user" not in session or session["user"].get("admin") != "no":
         return redirect(url_for("auth.login"))
 
     return render_template("dashboard.html")
@@ -22,38 +22,48 @@ def dashboard():
 
 @dashboard_bp.route("/mybookings")
 def my_bookings():
-    #customer_id = session["id"]
-
-    #if not customer_id:
-    #    return redirect(url_for("auth.login"))
+    customer_id = session.get("user", {}).get("id")
+    if not customer_id:
+        return redirect(url_for("auth.login"))
 
     bookings = get_customer_bookings(customer_id)
     return render_template("my_bookings.html", bookings=bookings)
 
 
+
 @dashboard_bp.route("/mybookings/<int:booking_id>", methods=["GET", "POST"])
 def booking_details(booking_id):
-    customer_id = session.get("user_id")
+    customer_id = session.get("user", {}).get("id")
+    if not customer_id:
+        flash("You need to be logged in to view booking details.", "warning")
+        return redirect(url_for("auth.login"))
 
     if request.method == "POST":
         rating = request.form["rating"]
         comment = request.form["comment"]
+
         if not rating:
             flash("Rating is required.", "warning")
         else:
             upsert_review(customer_id, booking_id, rating, comment)
             flash("Review submitted successfully.", "success")
+
         return redirect(url_for("dashboard.my_bookings"))
 
-    # For GET request
+    # Handle GET request
     booking, seats, review = get_booking_with_seats_and_review(customer_id, booking_id)
+    
     if not booking:
         flash("Booking not found or access denied.", "danger")
         return redirect(url_for("dashboard.my_bookings"))
 
     return render_template(
-        "booking_details.html", booking=booking, seats=seats, review=review
+        "booking_details.html",
+        booking=booking,
+        seats=seats,
+        review=review
     )
+
 
 
 @dashboard_bp.route("/book", methods=["GET", "POST"])
@@ -71,13 +81,13 @@ def book():
 
 @dashboard_bp.route("/book/<int:trip_id>/")
 def seat_selection(trip_id):
-    #customer_id = session["id"]
-
-    #if not customer_id:
-    #    return redirect(url_for("auth.login"))
+    customer_id = session.get("user", {}).get("id")
+    if not customer_id:
+        return redirect(url_for("auth.login"))
 
     seats = get_available_seats(trip_id)
     return render_template("seat_selection.html", trip_id=trip_id, seats=seats)
+
 
 @dashboard_bp.route("/book/<int:trip_id>/pay/init", methods=["POST"])
 def show_payment_page(trip_id):
@@ -93,7 +103,10 @@ def show_payment_page(trip_id):
 @dashboard_bp.route("/book/<int:trip_id>/pay", methods=["GET", "POST"])
 def payment(trip_id):
     if request.method == "POST":
-        customer_id = 1
+        customer_id = session.get("user", {}).get("id")
+        if not customer_id:
+            return redirect(url_for("auth.login"))
+
         payment_method = request.form.get("payment_method")  # UPI, Card, etc.
         seat_numbers = request.form.getlist("seats")  # Passed from hidden inputs
 

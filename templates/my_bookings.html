@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings - TravelEase{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">My Bookings</h2>
+
+    {% if bookings %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Date</th>
+                        <th>Trip Date</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Bus Number</th>
+                        <th>Seats</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.BookingID }}</td>
+                            <td>{{ booking.BookingDate.strftime("%Y-%m-%d") if booking.BookingDate else "N/A" }}</td>
+                            <td>{{ booking.TripDate }}</td>
+                            <td>{{ booking.DepartureTime }}</td>
+                            <td>{{ booking.ArrivalTime }}</td>
+                            <td>{{ booking.Source }}</td>
+                            <td>{{ booking.Destination }}</td>
+                            <td>{{ booking.BusNumber }}</td>
+                            <td>{{ booking.TotalSeats }}</td>
+                            <td>₹{{ booking.TotalAmount }}</td>
+                            <td>
+                                <a href="{{ url_for('dashboard.booking_details', booking_id=booking.BookingID) }}" class="btn btn-sm btn-primary">Details</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center">You have no bookings yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

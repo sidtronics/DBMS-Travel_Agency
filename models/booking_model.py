@@ -17,7 +17,7 @@ def get_customer_bookings(customer_id):
             l1.City AS Source,
             l2.City AS Destination,
             b.TotalSeats,
-            b.TotalAmount,
+            b.TotalAmount
         FROM Booking b
         JOIN Trip t ON b.TripID = t.TripID
         JOIN Bus bs ON t.BusID = bs.BusID

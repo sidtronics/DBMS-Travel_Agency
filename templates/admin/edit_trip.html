@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Edit Trip - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Trip #{{ trip[0] }}</h2>
+    <form method="POST">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="route_id" class="form-label">Route</label>
+                <select class="form-select" name="route_id" required>
+                    {% for route in routes %}
+                        <option value="{{ route[0] }}" {% if route[0] == trip[1] %}selected{% endif %}>{{ route[1] }} → {{ route[2] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="bus_id" class="form-label">Bus</label>
+                <select class="form-select" name="bus_id" required>
+                    {% for bus in buses %}
+                        <option value="{{ bus[0] }}" {% if bus[0] == trip[2] %}selected{% endif %}>{{ bus[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="trip_date" class="form-label">Date</label>
+                <input type="date" class="form-control" name="trip_date" value="{{ trip[5] }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="departure" class="form-label">Departure Time</label>
+                <input type="time" class="form-control" name="departure" value="{{ trip[3] }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="arrival" class="form-label">Arrival Time</label>
+                <input type="time" class="form-control" name="arrival" value="{{ trip[4] }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="price" class="form-label">Price Per Seat</label>
+                <input type="number" class="form-control" name="price" step="0.01" value="{{ trip[7] }}" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success mt-3">Update Trip</button>
+        <a href="{{ url_for('admin.manage_trips') }}" class="btn btn-secondary mt-3">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - TravelEase{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Welcome to the Admin Dashboard</h2>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Trips</h5>
+                    <p class="card-text">View, create, edit, or delete trips.</p>
+                    <a href="{{ url_for('admin.manage_trips') }}" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-success shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Routes</h5>
+                    <p class="card-text">Define and update travel routes.</p>
+                    <a href="{{ url_for('admin.manage_routes') }}" class="btn btn-success">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-warning shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Buses</h5>
+                    <p class="card-text">Assign or modify buses and details.</p>
+                    <a href="{{ url_for('admin.manage_buses') }}" class="btn btn-warning">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-info shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">User Management</h5>
+                    <p class="card-text">View all registered users and their data.</p>
+                    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-info">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-dark shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Booking Reports</h5>
+                    <p class="card-text">Analyze bookings and revenue reports.</p>
+                    <a href="{{ url_for('admin.booking_reports') }}" class="btn btn-dark">Go</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

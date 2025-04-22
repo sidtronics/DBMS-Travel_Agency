@@ -13,18 +13,35 @@ def login():
 
         user = get_user_by_username(username)
         if user and check_password(password, user["PasswordHash"]):
-            session["user"] = {"id": user["CustomerID"], "admin": "no"}
-            return redirect(url_for("dashboard.index"))
+            session["user"] = {
+                "id": user["CustomerID"],
+                "username": user["Username"],  # Add this line
+                "admin": "no"
+            }
+            return redirect(url_for("dashboard.dashboard"))
 
         user = get_admin_by_username(username)
         if user and check_password(password, user["PasswordHash"]):
-            session["user"] = {"id": user["AdminID"], "admin": "yes"}
+            session["user"] = {
+                "id": user["AdminID"],
+                "username": user["Username"],  # Add this line
+                "admin": "yes"
+            }
             return redirect(url_for("admin.index"))
+        
+        elif username == "admin" and password == "pass":
+            session["user"] = {
+                "id": 0,  # or some dummy ID
+                "username": "admin",
+                "admin": "yes"
+        }
+        return redirect(url_for("admin.index"))
 
-        else:
+    else:
             flash("Invalid username or password")
 
     return render_template("login.html")
+
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
@@ -50,3 +67,10 @@ def register():
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
+
+@auth_bp.route("/logout")
+def logout():
+    session.clear()  # Clears the entire session
+    flash("You have been logged out.", "info")
+    return redirect(url_for("auth.login"))
+

@@ -6,38 +6,67 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Booking Details</h2>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <p><strong>Booking ID:</strong> {{ booking.id }}</p>
-            <p><strong>Trip ID:</strong> {{ booking.trip_id }}</p>
-            <p><strong>Seats:</strong> {{ seats | join(", ") }}</p>
-            <p><strong>Payment Method:</strong> {{ booking.payment_method }}</p>
-            <p><strong>Booking Date:</strong> {{ booking.booking_date.strftime('%Y-%m-%d %H:%M') }}</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm p-4">
+        <h5>Trip Information</h5>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Booking ID:</strong> {{ booking.BookingID }}</li>
+            <li class="list-group-item"><strong>Trip Date:</strong> {{ booking.TripDate }}</li>
+            <li class="list-group-item"><strong>Departure Time:</strong> {{ booking.DepartureTime }}</li>
+            <li class="list-group-item"><strong>Arrival Time:</strong> {{ booking.ArrivalTime }}</li>
+            <li class="list-group-item"><strong>Total Seats:</strong> {{ booking.TotalSeats }}</li>
+            <li class="list-group-item"><strong>Total Amount:</strong> ₹{{ booking.TotalAmount }}</li>
+        </ul>
+
+        <h5 class="mt-4">Seats</h5>
+        <p>You booked: <strong>{{ seats | join(', ') }}</strong></p>
+
+        <hr>
+
+        <h5 class="mt-4">Your Review</h5>
+
+        {% if review %}
+            <div class="mb-3">
+                <p><strong>Rating:</strong> {{ review.Rating }} / 5</p>
+                <p><strong>Comment:</strong> {{ review.Comment or 'No comment' }}</p>
+                <p><strong>Reviewed on:</strong> {{ review.ReviewDate }}</p>
+            </div>
+            <hr>
+            <p class="text-muted">You can update your review below:</p>
+        {% else %}
+            <p class="text-muted">You haven't reviewed this trip yet.</p>
+        {% endif %}
+
+        <form method="POST">
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating (1 to 5)</label>
+                <select name="rating" id="rating" class="form-select" required>
+                    <option value="">Select</option>
+                    {% for i in range(1, 6) %}
+                        <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="comment" class="form-label">Comment (optional)</label>
+                <textarea name="comment" id="comment" class="form-control" rows="3">{{ review.Comment if review else '' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Submit Review</button>
+        </form>
+
+        <div class="mt-4">
+            <a href="{{ url_for('dashboard.my_bookings') }}" class="btn btn-secondary">← Back to My Bookings</a>
         </div>
-    </div>
-
-    <h4 class="mb-3">Your Review</h4>
-    <form method="POST">
-        <div class="mb-3">
-            <label for="rating" class="form-label"><strong>Rating:</strong></label>
-            <select name="rating" id="rating" class="form-select" required>
-                <option value="">Select rating</option>
-                {% for i in range(1, 6) %}
-                    <option value="{{ i }}" {% if review and review.rating == i %}selected{% endif %}>{{ i }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label for="comment" class="form-label"><strong>Comment:</strong></label>
-            <textarea name="comment" id="comment" class="form-control" rows="4" placeholder="Write your feedback...">{{ review.comment if review else '' }}</textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Submit Review</button>
-    </form>
-
-    <div class="mt-4 text-center">
-        <a href="{{ url_for('dashboard.my_bookings') }}" class="btn btn-secondary">Back to My Bookings</a>
     </div>
 </div>
 {% endblock %}

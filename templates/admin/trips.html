@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Manage Trips - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Manage Trips</h2>
+
+    <!-- Add Trip Form -->
+    <div class="card mb-4">
+        <div class="card-header">Add New Trip</div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.add_trip') }}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="route_id" class="form-label">Route</label>
+                        <select class="form-select" name="route_id" required>
+                            {% for route in routes %}
+                                <option value="{{ route[0] }}">{{ route[1] }} → {{ route[2] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="bus_id" class="form-label">Bus</label>
+                        <select class="form-select" name="bus_id" required>
+                            {% for bus in buses %}
+                                <option value="{{ bus[0] }}">{{ bus[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="trip_date" class="form-label">Date</label>
+                        <input type="date" class="form-control" name="trip_date" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="departure" class="form-label">Departure Time</label>
+                        <input type="time" class="form-control" name="departure" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="arrival" class="form-label">Arrival Time</label>
+                        <input type="time" class="form-control" name="arrival" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="price" class="form-label">Price Per Seat</label>
+                        <input type="number" class="form-control" name="price" step="0.01" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Add Trip</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Trip List Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Trip ID</th>
+                    <th>Route</th>
+                    <th>Bus</th>
+                    <th>Date</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Seats</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trip in trips %}
+                <tr>
+                    <td>{{ trip[0] }}</td>
+                    <td>{{ trip[1] }} → {{ trip[2] }}</td>
+                    <td>{{ trip[3] }}</td>
+                    <td>{{ trip[6] }}</td>
+                    <td>{{ trip[4] }}</td>
+                    <td>{{ trip[5] }}</td>
+                    <td>{{ trip[7] }}</td>
+                    <td>₹{{ trip[8] }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_trip', trip_id=trip[0]) }}" class="btn btn-sm btn-info">Edit</a>
+                        <form action="{{ url_for('admin.delete_trip', trip_id=trip[0]) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
