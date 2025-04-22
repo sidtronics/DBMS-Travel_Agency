@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS Booking (
     TotalSeats INT NOT NULL,
     TotalAmount DECIMAL(8,2),
     FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
-    FOREIGN KEY (TripID) REFERENCES Trip(TripID)
+    FOREIGN KEY (TripID) REFERENCES Trip(TripID) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Seat (
@@ -96,8 +96,8 @@ CREATE TABLE IF NOT EXISTS Seat (
     SeatNumber VARCHAR(10) NOT NULL,
     Status ENUM('Available', 'Booked') DEFAULT 'Available',
     BookingID INT DEFAULT NULL,
-    FOREIGN KEY (TripID) REFERENCES Trip(TripID),
-    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID)
+    FOREIGN KEY (TripID) REFERENCES Trip(TripID) ON DELETE CASCADE,
+    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Payment (
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS Payment (
     Amount DECIMAL(8,2) NOT NULL,
     PaymentMethod ENUM('UPI', 'Card', 'Netbanking') NOT NULL,
     PaymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID)
+    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Review (
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS Review (
     Comment TEXT,
     ReviewDate DATE DEFAULT CURRENT_DATE,
     FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
-    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID)
+    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID) ON DELETE CASCADE
 );
 """
 
