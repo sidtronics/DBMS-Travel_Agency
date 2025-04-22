@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Edit Bus - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Edit Bus</h2>
+
+    <div class="card">
+        <div class="card-header">Update Bus Details</div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="bus_number" class="form-label">Bus Number</label>
+                        <input type="text" class="form-control" name="bus_number" value="{{ bus[1] }}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="capacity" class="form-label">Capacity</label>
+                        <input type="number" class="form-control" name="capacity" value="{{ bus[2] }}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="bus_type" class="form-label">Bus Type</label>
+                        <select class="form-select" name="bus_type" required>
+                            <option value="AC" {% if bus[3] == "AC" %}selected{% endif %}>AC</option>
+                            <option value="Non-AC" {% if bus[3] == "Non-AC" %}selected{% endif %}>Non-AC</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="route_id" class="form-label">Route</label>
+                        <select class="form-select" name="route_id" required>
+                            {% for route in routes %}
+                                <option value="{{ route[0] }}" {% if route[0] == bus[4] %}selected{% endif %}>
+                                    {{ route[1] }} → {{ route[2] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Update Bus</button>
+                <a href="{{ url_for('admin.manage_buses') }}" class="btn btn-secondary mt-3">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

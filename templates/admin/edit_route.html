@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Edit Route - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Edit Route</h2>
+
+    <div class="card">
+        <div class="card-header">Update Route Details</div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="source_id" class="form-label">Source</label>
+                        <select class="form-select" name="source_id" required>
+                            {% for location in locations %}
+                                <option value="{{ location[0] }}" {% if location[0] == route[1] %}selected{% endif %}>
+                                    {{ location[1] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="destination_id" class="form-label">Destination</label>
+                        <select class="form-select" name="destination_id" required>
+                            {% for location in locations %}
+                                <option value="{{ location[0] }}" {% if location[0] == route[2] %}selected{% endif %}>
+                                    {{ location[1] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="distance" class="form-label">Distance (km)</label>
+                        <input type="number" step="0.1" class="form-control" name="distance"
+                               value="{{ route[3] }}" required>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="estimated_time" class="form-label">Estimated Time</label>
+                        <input type="text" class="form-control" name="estimated_time"
+                               value="{{ route[4] }}" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Update Route</button>
+                <a href="{{ url_for('admin.manage_routes') }}" class="btn btn-secondary mt-3">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

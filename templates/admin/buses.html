@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Manage Buses - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Manage Buses</h2>
+
+    <!-- Add Bus Form -->
+    <div class="card mb-4">
+        <div class="card-header">Add New Bus</div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.add_bus') }}">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="bus_number" class="form-label">Bus Number</label>
+                        <input type="text" class="form-control" name="bus_number" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="capacity" class="form-label">Capacity</label>
+                        <input type="number" class="form-control" name="capacity" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="bus_type" class="form-label">Bus Type</label>
+                        <select class="form-select" name="bus_type" required>
+                            <option value="AC">AC</option>
+                            <option value="Non-AC">Non-AC</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="route_id" class="form-label">Route</label>
+                        <select class="form-select" name="route_id" required>
+                            {% for route in routes %}
+                                <option value="{{ route[0] }}">{{ route[1] }} → {{ route[2] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Add Bus</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bus List Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Bus ID</th>
+                    <th>Bus Number</th>
+                    <th>Capacity</th>
+                    <th>Type</th>
+                    <th>Route</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bus in buses %}
+                <tr>
+                    <td>{{ bus[0] }}</td>
+                    <td>{{ bus[1] }}</td>
+                    <td>{{ bus[2] }}</td>
+                    <td>{{ bus[3] }}</td>
+                    <td>{{ bus[5] }} → {{ bus[6] }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_bus', bus_id=bus[0]) }}" class="btn btn-sm btn-info">Edit</a>
+                        <form action="{{ url_for('admin.delete_bus', bus_id=bus[0]) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

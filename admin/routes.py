@@ -1,14 +1,29 @@
 from flask import Blueprint, render_template, session, redirect, url_for, flash, request
-from models.bus_model import fetch_buses
+from models.bus_model import (
+    get_all_buses,
+    add_new_bus,
+    get_bus_by_id,
+    update_bus,
+    delete_bus_by_id,
+    fetch_buses
+)
+from models.location_model import get_all_locations
+from models.route_model import (
+    add_new_route,
+    get_all_routes,
+    get_route_by_id,
+    fetch_routes,
+    update_route,
+    delete_route_by_id,
+    get_all_route_ids
+)
 from models.trip_model import (
     fetch_trips,
     add_new_trip,
     delete_trip_by_id,
     get_trip_by_id,
-    update_trip
+    update_trip,
 )
-from models.route_model import fetch_routes, get_all_routes
-
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -138,179 +153,119 @@ def edit_trip(trip_id):
 # -------------------------
 
 
-@admin_bp.route("/routes", methods=["get"], endpoint="manage_routes")
+@admin_bp.route("/routes", methods=["GET"], endpoint="manage_routes")
 def manage_routes():
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute(
-        "select routeid, sourceid, destinationid, distance, estimatedtime from route"
-    )
-    routes = cur.fetchall()
-    # also fetch locations for forms
-    cur.execute("select locationid, city from location")
-    locations = cur.fetchall()
-    conn.close()
+    routes = get_all_routes()
+    locations = get_all_locations()
     return render_template("admin/routes.html", routes=routes, locations=locations)
 
 
-@admin_bp.route("/routes/add", methods=["post"], endpoint="add_route")
+@admin_bp.route("/routes/add", methods=["POST"], endpoint="add_route")
 def add_route():
     data = request.form
     try:
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "insert into route (sourceid, destinationid, distance, estimatedtime) values (?, ?, ?, ?)",
-            (
-                data["source_id"],
-                data["destination_id"],
-                data["distance"],
-                data["estimated_time"],
-            ),
+        add_new_route(
+            data["source_id"],
+            data["destination_id"],
+            data["distance"],
+            data["estimated_time"] + " hours",
         )
-        conn.commit()
-        flash("route added successfully.", "success")
-    except exception as e:
-        flash(f"error adding route: {e}", "danger")
-    finally:
-        conn.close()
+        flash("Route added successfully.", "success")
+    except Exception as e:
+        flash(f"Error adding route: {e}", "danger")
     return redirect(url_for("admin.manage_routes"))
 
 
 @admin_bp.route(
-    "/routes/edit/<int:route_id>", methods=["get", "post"], endpoint="edit_route"
+    "/routes/edit/<int:route_id>", methods=["GET", "POST"], endpoint="edit_route"
 )
 def edit_route(route_id):
-    conn = get_connection()
-    cur = conn.cursor()
-    if request.method == "post":
+    if request.method == "POST":
         data = request.form
         try:
-            cur.execute(
-                "update route set sourceid=?, destinationid=?, distance=?, estimatedtime=? where routeid=?",
-                (
-                    data["source_id"],
-                    data["destination_id"],
-                    data["distance"],
-                    data["estimated_time"],
-                    route_id,
-                ),
+            update_route(
+                route_id,
+                data["source_id"],
+                data["destination_id"],
+                data["distance"],
+                data["estimated_time"],
             )
-            conn.commit()
-            flash("route updated.", "success")
+            flash("Route updated successfully.", "success")
             return redirect(url_for("admin.manage_routes"))
-        except exception as e:
-            flash(f"error updating route: {e}", "danger")
-    # get
-    cur.execute(
-        "select routeid, sourceid, destinationid, distance, estimatedtime from route where routeid=?",
-        (route_id,),
-    )
-    route = cur.fetchone()
-    cur.execute("select locationid, city from location")
-    locations = cur.fetchall()
-    conn.close()
+        except Exception as e:
+            flash(f"Error updating route: {e}", "danger")
+
+    route = get_route_by_id(route_id)
+    locations = get_all_locations()  # Already defined earlier
     return render_template("admin/edit_route.html", route=route, locations=locations)
 
 
 @admin_bp.route(
-    "/routes/delete/<int:route_id>", methods=["post"], endpoint="delete_route"
+    "/routes/delete/<int:route_id>", methods=["POST"], endpoint="delete_route"
 )
 def delete_route(route_id):
     try:
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute("delete from route where routeid=?", (route_id,))
-        conn.commit()
-        flash("route deleted.", "success")
-    except exception as e:
-        flash(f"error deleting route: {e}", "danger")
-    finally:
-        conn.close()
+        delete_route_by_id(route_id)
+        flash("Route deleted successfully.", "success")
+    except Exception as e:
+        flash(f"Error deleting route: {e}", "danger")
     return redirect(url_for("admin.manage_routes"))
 
 
 # -------------------------
 # buses management
 # -------------------------
-@admin_bp.route("/buses", methods=["get"], endpoint="manage_buses")
+@admin_bp.route("/buses", methods=["GET"], endpoint="manage_buses")
 def manage_buses():
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("select busid, busnumber, capacity, bustype, routeid from bus")
-    buses = cur.fetchall()
-    cur.execute("select routeid from route")
-    routes = cur.fetchall()
-    conn.close()
+    buses = get_all_buses()
+    routes = get_all_routes()
     return render_template("admin/buses.html", buses=buses, routes=routes)
 
 
-@admin_bp.route("/buses/add", methods=["post"], endpoint="add_bus")
+@admin_bp.route("/buses/add", methods=["POST"], endpoint="add_bus")
 def add_bus():
     data = request.form
     try:
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "insert into bus (busnumber, capacity, bustype, routeid) values (?, ?, ?, ?)",
-            (data["bus_number"], data["capacity"], data["bus_type"], data["route_id"]),
+        add_new_bus(
+            data["bus_number"], data["capacity"], data["bus_type"], data["route_id"]
         )
-        conn.commit()
-        flash("bus added.", "success")
-    except exception as e:
-        flash(f"error adding bus: {e}", "danger")
-    finally:
-        conn.close()
+        flash("Bus added successfully.", "success")
+    except Exception as e:
+        flash(f"Error adding bus: {e}", "danger")
     return redirect(url_for("admin.manage_buses"))
 
 
 @admin_bp.route(
-    "/buses/edit/<int:bus_id>", methods=["get", "post"], endpoint="edit_bus"
+    "/buses/edit/<int:bus_id>", methods=["GET", "POST"], endpoint="edit_bus"
 )
 def edit_bus(bus_id):
-    conn = get_connection()
-    cur = conn.cursor()
-    if request.method == "post":
+    if request.method == "POST":
         data = request.form
         try:
-            cur.execute(
-                "update bus set busnumber=?, capacity=?, bustype=?, routeid=? where busid=?",
-                (
-                    data["bus_number"],
-                    data["capacity"],
-                    data["bus_type"],
-                    data["route_id"],
-                    bus_id,
-                ),
+            update_bus(
+                bus_id,
+                data["bus_number"],
+                data["capacity"],
+                data["bus_type"],
+                data["route_id"],
             )
-            conn.commit()
-            flash("bus updated.", "success")
+            flash("Bus updated successfully.", "success")
             return redirect(url_for("admin.manage_buses"))
-        except exception as e:
-            flash(f"error updating bus: {e}", "danger")
-    cur.execute(
-        "select busid, busnumber, capacity, bustype, routeid from bus where busid=?",
-        (bus_id,),
-    )
-    bus = cur.fetchone()
-    cur.execute("select routeid from route")
-    routes = cur.fetchall()
-    conn.close()
+        except Exception as e:
+            flash(f"Error updating bus: {e}", "danger")
+
+    bus = get_bus_by_id(bus_id)
+    routes = get_all_routes()
     return render_template("admin/edit_bus.html", bus=bus, routes=routes)
 
 
-@admin_bp.route("/buses/delete/<int:bus_id>", methods=["post"], endpoint="delete_bus")
+@admin_bp.route("/buses/delete/<int:bus_id>", methods=["POST"], endpoint="delete_bus")
 def delete_bus(bus_id):
     try:
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute("delete from bus where busid=?", (bus_id,))
-        conn.commit()
-        flash("bus deleted.", "success")
-    except exception as e:
-        flash(f"error deleting bus: {e}", "danger")
-    finally:
-        conn.close()
+        delete_bus_by_id(bus_id)
+        flash("Bus deleted successfully.", "success")
+    except Exception as e:
+        flash(f"Error deleting bus: {e}", "danger")
     return redirect(url_for("admin.manage_buses"))
 
 
