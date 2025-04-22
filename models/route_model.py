@@ -90,12 +90,3 @@ def delete_route_by_id(route_id):
         conn.commit()
     finally:
         conn.close()
-
-
-def get_all_route_ids():
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT RouteID FROM Route")
-    routes = cur.fetchall()
-    conn.close()
-    return routes
